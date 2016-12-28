@@ -14,6 +14,7 @@ import org.kie.internal.command.CommandFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 public class RulesRunner implements AutoCloseable {
@@ -31,17 +32,17 @@ public class RulesRunner implements AutoCloseable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public ValidationResult validateRequirements(Requirement... requirements) {
+	public Collection<ValidationResult> validateRequirements(Requirement... requirements) {
 		List<Command<?>> commands = new ArrayList<>();
 
 		commands.add(CommandFactory.newInsertElements(Arrays.asList(requirements)));
-		commands.add(CommandFactory.newSetGlobal("result", new ValidationResult(), true));
+		commands.add(CommandFactory.newSetGlobal("results", new ArrayList<>(), true));
 
 		BatchExecutionCommand batchExecutionCommand = CommandFactory.newBatchExecution(commands);
 
 		ExecutionResults results = this.kieBase.newStatelessKieSession().execute(batchExecutionCommand);
 
-        return (ValidationResult)results.getValue("result");
+        return (List<ValidationResult>)results.getValue("results");
 	}
 
 	@Override

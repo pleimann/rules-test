@@ -1,13 +1,16 @@
 package mil.ustranscom.at21.mrv;
 
 import mil.ustranscom.at21.mrv.model.Requirement;
+import mil.ustranscom.at21.mrv.model.ValidationResultSeverity;
 import mil.ustranscom.at21.mrv.model.ValidationResult;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.drools.core.util.DateUtils;
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ErrorCollector;
 
+import java.util.Collection;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
@@ -28,11 +31,13 @@ public class RulesRunnerTest {
 		try(RulesRunner runner = new RulesRunner()){
             Requirement requirement = new Requirement(UUID.randomUUID(), DateUtils.parseDate("20-Dec-2016"), RandomStringUtils.randomAlphabetic(3, 25));
 
-            ValidationResult result = runner.validateRequirements(requirement);
+			Collection<ValidationResult> results = runner.validateRequirements(requirement);
 			
-			errors.checkThat(result.getErrors(), is(notNullValue()));
-            errors.checkThat(result.getErrors().size(), is(1));
-            errors.checkThat(result.getErrors().get(requirement), hasItems("Requirement Start Date is in past"));
+            errors.checkThat(results, hasSize(1));
+
+			errors.checkThat(results, hasItem(Matchers.<ValidationResult>hasProperty("requirement", is(requirement))));
+            errors.checkThat(results, hasItem(Matchers.<ValidationResult>hasProperty("message", is("Requirement Start Date is in past"))));
+            errors.checkThat(results, hasItem(Matchers.<ValidationResult>hasProperty("severity", is(ValidationResultSeverity.WARNING))));
 		}
 	}
 
@@ -43,20 +48,24 @@ public class RulesRunnerTest {
                     new Requirement(UUID.randomUUID(), DateUtils.parseDate("20-Dec-2016"), RandomStringUtils.randomAlphabetic(3, 25)),
                     new Requirement(UUID.randomUUID(), DateUtils.parseDate("02-Oct-2015"), null),
                     new Requirement(UUID.randomUUID(), DateUtils.parseDate("20-Dec-2016"), RandomStringUtils.randomAlphabetic(3, 25)),
-                    new Requirement(UUID.randomUUID(), DateUtils.parseDate("20-Dec-2016"), RandomStringUtils.randomAlphabetic(3, 25))
+                    new Requirement(UUID.randomUUID(), DateUtils.parseDate("27-Dec-2016"), RandomStringUtils.randomAlphabetic(3, 25))
             };
 
-            ValidationResult result = runner.validateRequirements(requirements);
+            Collection<ValidationResult> results = runner.validateRequirements(requirements);
 
-            errors.checkThat(result.getErrors(), is(notNullValue()));
-            errors.checkThat(result.getErrors().size(), is(5));
+            errors.checkThat(results, hasSize(4));
 
-			for(Requirement requirement : requirements){
-                errors.checkThat(requirement, is(notNullValue()));
+			for(ValidationResult result : results){
+                errors.checkThat(result.getRequirement(), is(notNullValue()));
+                errors.checkThat(result.getMessage(), is(notNullValue()));
+                errors.checkThat(result.getSeverity(), is(notNullValue()));
 
-			    if(!requirement.getValid()) {
-                    System.out.println(result.getErrors().get(requirement));
-                }
+			    if(!result.getRequirement().getValid()) {
+					errors.checkThat(results, hasItem(Matchers.<ValidationResult>hasProperty("requirement", is(result.getRequirement()))));
+					errors.checkThat(results, hasItem(Matchers.<ValidationResult>hasProperty("message", is("Requirement Start Date is in past"))));
+					errors.checkThat(results, hasItem(Matchers.<ValidationResult>hasProperty("severity", is(ValidationResultSeverity.WARNING))));
+
+				}
             }
 		}
 	}

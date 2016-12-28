@@ -1,0 +1,26 @@
+package mil.ustranscom.at21.mrv.rules
+
+import java.util.List
+import mil.ustranscom.at21.mrv.model.Requirement
+import mil.ustranscom.at21.mrv.model.ValidationResult
+import mil.ustranscom.at21.mrv.model.ValidationResultSeverity
+
+global List<ValidationResult> results;
+
+rule "Is Named"
+when
+    $r : Requirement( $id: id, name == null )
+then
+    $r.setValid( false );
+    
+    results.add( new ValidationResult($r, ValidationResultSeverity.FATAL, "Requirement is not named") );
+end
+
+rule "Date is in past"
+when
+    $r : Requirement( $id: id, startDate < "27-Dec-2016" )
+then
+    $r.setValid( false );
+
+    results.add( new ValidationResult($r, ValidationResultSeverity.WARNING, "Requirement Start Date is in past") );
+end
