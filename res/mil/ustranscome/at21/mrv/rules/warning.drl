@@ -1,0 +1,5 @@
+package mil.ustranscom.at21.mrv.rules
+
+import mil.ustranscom.at21.mrv.model.Requirement
+
+global mil.ustranscom.at21.mrv.model.ValidationResult result;

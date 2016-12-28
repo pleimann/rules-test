@@ -1,0 +1,23 @@
+package mil.ustranscom.at21.mrv.rules
+
+import mil.ustranscom.at21.mrv.model.Requirement
+
+global mil.ustranscom.at21.mrv.model.ValidationResult result;
+
+rule "Is Named"
+when
+    $r : Requirement( $id: id, name == null )
+then
+    $r.setValid( false );
+    
+    result.error($r, "Requirement is not named");
+end
+
+rule "Date is in past"
+when
+    $r : Requirement( $id: id, startDate < "27-Dec-2016" )
+then
+    $r.setValid( false );
+    
+    result.error($r, "Requirement Start Date is in past");
+end
