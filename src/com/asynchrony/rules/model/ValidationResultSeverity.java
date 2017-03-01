@@ -1,4 +1,4 @@
-package mil.ustranscom.at21.mrv.model;
+package com.asynchrony.rules.model;
 
 public enum ValidationResultSeverity {
     FATAL, WARNING

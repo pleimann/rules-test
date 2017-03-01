@@ -1,0 +1,46 @@
+package com.asynchrony.rules.rules
+
+import com.asynchrony.rules.model.Requirement
+import com.asynchrony.rules.model.ValidationResult
+import com.asynchrony.rules.model.ValidationResultSeverity
+import com.asynchrony.rules.model.GeoLocation;
+import java.util.List
+
+global List<ValidationResult> results;
+
+rule "Has start date"
+when
+    $r : Requirement( $id: id, earliestDate == null )
+then
+    $r.setValid( false );
+
+    results.add( new ValidationResult($r, ValidationResultSeverity.FATAL, "Requirement is missing earliest date") );
+end
+
+rule "Has end date"
+when
+    $r : Requirement( $id: id, latestDate == null )
+then
+    $r.setValid( false );
+
+    results.add( new ValidationResult($r, ValidationResultSeverity.FATAL, "Requirement is missing latest date") );
+end
+
+rule "Date is in past"
+when
+    $r : Requirement( $id: id, earliestDate < "27-Dec-2016" )
+then
+    $r.setValid( false );
+
+    results.add( new ValidationResult($r, ValidationResultSeverity.WARNING, "Requirement earliest date is in past") );
+end
+
+rule "Geographic Location not defined"
+when
+    $r : Requirement( )
+    not $g : GeoLocation( code == $r.geoCode )
+then
+    $r.setValid( false );
+
+    results.add( new ValidationResult($r, ValidationResultSeverity.FATAL, "Invalid GeoLoc code") );
+end
